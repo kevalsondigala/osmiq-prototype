@@ -12,7 +12,6 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  GraduationCap,
   Moon,
   Sun,
   CreditCard
@@ -58,13 +57,29 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 flex items-center justify-between h-16 mb-2">
         {!isCollapsed && (
           <div className="flex items-center gap-2 text-indigo-600 font-bold text-xl">
-            <GraduationCap className="w-6 h-6" />
+            <img 
+              src="/assets/osmiq-logo.png" 
+              alt="Osmiq Logo" 
+              className="w-6 h-6 object-contain"
+              onError={(e) => {
+                // Fallback if image doesn't exist
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
             <span>Osmiq</span>
           </div>
         )}
         {isCollapsed && (
            <div className="mx-auto text-indigo-600">
-             <GraduationCap className="w-6 h-6" />
+             <img 
+               src="/assets/osmiq-logo.png" 
+               alt="Osmiq Logo" 
+               className="w-6 h-6 object-contain"
+               onError={(e) => {
+                 // Fallback if image doesn't exist
+                 (e.target as HTMLImageElement).style.display = 'none';
+               }}
+             />
            </div>
         )}
         
@@ -116,16 +131,25 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Footer / Profile */}
       <div className={`p-4 border-t space-y-2 ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} p-2 rounded-lg ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
-          {!isCollapsed && <span className={`text-xs font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{isDarkMode ? 'Dark Mode' : 'Light Mode'}</span>}
-           {/* Visual Toggle */}
-           <div 
-             onClick={toggleTheme}
-             className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${isDarkMode ? 'bg-indigo-600' : 'bg-slate-300'}`}
-           >
-              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-300 ${isDarkMode ? 'left-5.5' : 'left-0.5'}`}></div>
-           </div>
-        </div>
+        <button
+          onClick={toggleTheme}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+            isDarkMode 
+              ? 'bg-slate-700/50 hover:bg-slate-700 text-slate-200' 
+              : 'bg-slate-50 hover:bg-slate-100 text-slate-600'
+          }`}
+        >
+          {!isCollapsed && (
+            <span className="text-sm font-medium">
+              {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+            </span>
+          )}
+          {isDarkMode ? (
+            <Sun size={20} className="text-yellow-400" />
+          ) : (
+            <Moon size={20} className="text-indigo-600" />
+          )}
+        </button>
 
         <button 
           onClick={() => setCurrentView(View.SUBSCRIPTION)}
