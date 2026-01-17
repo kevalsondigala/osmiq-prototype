@@ -89,15 +89,36 @@ const Subscription: React.FC = () => {
           <div 
             key={plan.name}
             className={`
-              relative rounded-3xl p-8 transition-all duration-300 flex flex-col h-full
+              group relative rounded-3xl p-8 transition-all duration-300 flex flex-col h-full overflow-hidden
               ${plan.highlight 
                 ? 'bg-white dark:bg-slate-800 border-2 border-indigo-500 shadow-xl shadow-indigo-100 dark:shadow-none scale-105 z-10' 
                 : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
               }
             `}
           >
+            {/* Glare Effect Layers */}
+            <div 
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0 rounded-3xl"
+              style={{
+                background: `radial-gradient(600px circle at center, rgba(255, 255, 255, 0.4), transparent 40%)`,
+              }}
+            />
+            <div 
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0 rounded-3xl"
+              style={{
+                background: `linear-gradient(135deg, transparent 0%, rgba(99, 102, 241, 0.2) 45%, rgba(139, 92, 246, 0.2) 50%, rgba(99, 102, 241, 0.2) 55%, transparent 100%)`,
+                transform: `rotate(45deg)`,
+                width: '200%',
+                height: '200%',
+                left: '-50%',
+                top: '-50%',
+              }}
+            />
+            
+            {/* Content wrapper with relative positioning */}
+            <div className="relative z-10">
             {plan.badge && (
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-bold shadow-sm flex items-center gap-1">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-bold shadow-sm flex items-center gap-1 z-20">
                 <Star size={14} fill="currentColor" /> {plan.badge}
               </div>
             )}
@@ -135,7 +156,7 @@ const Subscription: React.FC = () => {
 
             <button
               className={`
-                w-full py-3.5 rounded-xl font-bold transition-all text-sm
+                w-full py-3.5 rounded-xl font-bold transition-all text-sm relative z-10
                 ${plan.current 
                   ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed' 
                   : plan.highlight
@@ -146,6 +167,7 @@ const Subscription: React.FC = () => {
             >
               {plan.cta}
             </button>
+            </div>
           </div>
         ))}
       </div>

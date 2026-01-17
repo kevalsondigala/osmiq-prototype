@@ -60,34 +60,34 @@ const SurpriseTest: React.FC<SurpriseTestProps> = ({ onComplete }) => {
   if (loading) {
     return (
       <div className="h-full flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-        <p className="text-slate-500 text-lg">AI is generating your surprise test...</p>
-        <p className="text-slate-400 text-sm">Analyzing notes and patterns</p>
+        <Loader2 className="w-12 h-12 text-indigo-600 dark:text-indigo-400 animate-spin" />
+        <p className="text-slate-500 dark:text-slate-400 text-lg">AI is generating your surprise test...</p>
+        <p className="text-slate-400 dark:text-slate-500 text-sm">Analyzing notes and patterns</p>
       </div>
     );
   }
 
-  if (!test) return <div className="text-center p-10 text-red-500">Failed to load test. Please refresh.</div>;
+  if (!test) return <div className="text-center p-10 text-red-500 dark:text-red-400">Failed to load test. Please refresh.</div>;
 
   if (submitted) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-8 bg-white max-w-2xl mx-auto rounded-xl shadow-sm border border-slate-100 my-8">
-        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
-          <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+      <div className="h-full flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-800 max-w-2xl mx-auto rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 my-8">
+        <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
         </div>
-        <h2 className="text-3xl font-bold text-slate-900 mb-2">Test Completed!</h2>
-        <p className="text-slate-500 mb-8 text-center">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Test Completed!</h2>
+        <p className="text-slate-500 dark:text-slate-400 mb-8 text-center">
           Great job staying consistent. Your dashboard is now unlocked for the week.
         </p>
         
         <div className="flex gap-8 mb-8">
           <div className="text-center">
-            <div className="text-3xl font-bold text-indigo-600">{score}</div>
-            <div className="text-xs text-slate-400 uppercase tracking-wide">Points Scored</div>
+            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{score}</div>
+            <div className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wide">Points Scored</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-indigo-600">{test.questions.length}</div>
-            <div className="text-xs text-slate-400 uppercase tracking-wide">Questions</div>
+            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{test.questions.length}</div>
+            <div className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wide">Questions</div>
           </div>
         </div>
 
@@ -103,25 +103,25 @@ const SurpriseTest: React.FC<SurpriseTestProps> = ({ onComplete }) => {
 
   return (
     <div className="max-w-3xl mx-auto p-6 pb-20">
-      <div className="mb-8 flex justify-between items-end border-b border-slate-200 pb-4">
+      <div className="mb-8 flex justify-between items-end border-b border-slate-200 dark:border-slate-700 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{test.title}</h1>
-          <p className="text-slate-500">{test.subject} • {test.durationMinutes} mins</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{test.title}</h1>
+          <p className="text-slate-500 dark:text-slate-400">{test.subject} • {test.durationMinutes} mins</p>
         </div>
-        <div className="text-sm font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+        <div className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full">
           Mandatory
         </div>
       </div>
 
       <div className="space-y-8">
         {test.questions.map((q, idx) => (
-          <div key={q.id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div key={q.id} className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <div className="flex gap-4">
-              <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-slate-100 text-slate-600 rounded-full font-bold text-sm">
+              <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full font-bold text-sm">
                 {idx + 1}
               </span>
               <div className="flex-1">
-                <p className="text-lg font-medium text-slate-900 mb-4">{q.text}</p>
+                <p className="text-lg font-medium text-slate-900 dark:text-white mb-4">{q.text}</p>
                 
                 {q.type === 'MCQ' && q.options && (
                   <div className="space-y-3">
@@ -142,7 +142,7 @@ const SurpriseTest: React.FC<SurpriseTestProps> = ({ onComplete }) => {
                           onChange={() => handleOptionSelect(q.id, opt)}
                           className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                         />
-                        <span className="ml-3 text-slate-700">{opt}</span>
+                        <span className="ml-3 text-slate-700 dark:text-slate-200">{opt}</span>
                       </label>
                     ))}
                   </div>
@@ -153,7 +153,7 @@ const SurpriseTest: React.FC<SurpriseTestProps> = ({ onComplete }) => {
                     value={answers[q.id] || ''}
                     onChange={(e) => handleSubjectiveChange(q.id, e.target.value)}
                     placeholder="Type your answer here..."
-                    className="w-full h-32 p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none"
+                    className="w-full h-32 p-4 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none"
                   />
                 )}
               </div>
@@ -162,7 +162,7 @@ const SurpriseTest: React.FC<SurpriseTestProps> = ({ onComplete }) => {
         ))}
       </div>
 
-      <div className="fixed bottom-0 left-0 md:left-64 right-0 p-4 bg-white border-t border-slate-200 flex justify-end items-center z-10">
+      <div className="fixed bottom-0 left-0 md:left-64 right-0 p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-end items-center z-10">
         <button
           onClick={handleSubmit}
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-8 rounded-lg transition-colors shadow-lg shadow-indigo-200"

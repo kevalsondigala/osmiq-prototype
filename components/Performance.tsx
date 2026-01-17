@@ -31,8 +31,8 @@ const Analytics: React.FC = () => {
     <div className="p-8 max-w-7xl mx-auto space-y-8 pb-24">
       <div className="flex justify-between items-end">
         <div>
-           <h1 className="text-3xl font-bold text-slate-900">Analytics</h1>
-           <p className="text-slate-500 mt-1">Deep dive into your learning patterns.</p>
+           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Analytics</h1>
+           <p className="text-slate-500 dark:text-slate-400 mt-1">Deep dive into your learning patterns.</p>
         </div>
         <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-sm shadow-indigo-200">
            <Download size={18} /> Download Report
@@ -41,44 +41,44 @@ const Analytics: React.FC = () => {
 
       {/* Top Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32">
-            <div className="flex justify-between text-slate-500">
+         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between h-32">
+            <div className="flex justify-between text-slate-500 dark:text-slate-400">
                <span className="text-xs font-semibold uppercase tracking-wider">Avg Time Spent</span>
                <Clock size={16} />
             </div>
             <div>
-               <span className="text-3xl font-bold text-slate-900">4h 12m</span>
-               <span className="text-xs text-emerald-500 font-medium ml-2">↑ 15% vs last week</span>
+               <span className="text-3xl font-bold text-slate-900 dark:text-white">4h 12m</span>
+               <span className="text-xs text-emerald-500 dark:text-emerald-400 font-medium ml-2">↑ 15% vs last week</span>
             </div>
          </div>
-         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32">
-            <div className="flex justify-between text-slate-500">
+         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between h-32">
+            <div className="flex justify-between text-slate-500 dark:text-slate-400">
                <span className="text-xs font-semibold uppercase tracking-wider">Success Rate</span>
                <Target size={16} />
             </div>
             <div>
-               <span className="text-3xl font-bold text-slate-900">82%</span>
-               <span className="text-xs text-emerald-500 font-medium ml-2">Top 10%</span>
+               <span className="text-3xl font-bold text-slate-900 dark:text-white">82%</span>
+               <span className="text-xs text-emerald-500 dark:text-emerald-400 font-medium ml-2">Top 10%</span>
             </div>
          </div>
-         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32">
-            <div className="flex justify-between text-slate-500">
+         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between h-32">
+            <div className="flex justify-between text-slate-500 dark:text-slate-400">
                <span className="text-xs font-semibold uppercase tracking-wider">Tests Taken</span>
                <Activity size={16} />
             </div>
             <div>
-               <span className="text-3xl font-bold text-slate-900">14</span>
-               <span className="text-xs text-slate-400 font-medium ml-2">This month</span>
+               <span className="text-3xl font-bold text-slate-900 dark:text-white">14</span>
+               <span className="text-xs text-slate-400 dark:text-slate-500 font-medium ml-2">This month</span>
             </div>
          </div>
-         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32">
-            <div className="flex justify-between text-slate-500">
+         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between h-32">
+            <div className="flex justify-between text-slate-500 dark:text-slate-400">
                <span className="text-xs font-semibold uppercase tracking-wider">Next Milestone</span>
                <TrendingUp size={16} />
             </div>
             <div>
-               <span className="text-xl font-bold text-slate-900">Scholar Badge</span>
-               <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+               <span className="text-xl font-bold text-slate-900 dark:text-white">Scholar Badge</span>
+               <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-2 overflow-hidden">
                   <div className="bg-indigo-500 h-full w-[80%]"></div>
                </div>
             </div>
@@ -87,8 +87,8 @@ const Analytics: React.FC = () => {
 
       <div className="grid md:grid-cols-3 gap-8">
         {/* Usage Trend */}
-        <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-           <h3 className="font-bold text-slate-800 mb-6">Usage Trend</h3>
+        <div className="md:col-span-2 bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+           <h3 className="font-bold text-slate-800 dark:text-white mb-6">Usage Trend</h3>
            <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                  <AreaChart data={usageTrendData}>
@@ -109,8 +109,8 @@ const Analytics: React.FC = () => {
         </div>
 
         {/* Top Subjects */}
-        <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-           <h3 className="font-bold text-slate-800 mb-6">Top Subjects</h3>
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+           <h3 className="font-bold text-slate-800 dark:text-white mb-6">Top Subjects</h3>
            <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                  <BarChart data={subjectPerformance} layout="vertical">
@@ -126,8 +126,8 @@ const Analytics: React.FC = () => {
 
       <div className="grid md:grid-cols-2 gap-8">
          {/* Recent Activity */}
-         <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-            <h3 className="font-bold text-slate-800 mb-6">Recent Activity</h3>
+         <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <h3 className="font-bold text-slate-800 dark:text-white mb-6">Recent Activity</h3>
             <div className="space-y-6">
                {[
                   { title: "Surprise Test - Biology", time: "2 hours ago", score: "8/10", type: "Test" },
@@ -136,36 +136,36 @@ const Analytics: React.FC = () => {
                ].map((item, i) => (
                   <div key={i} className="flex items-center justify-between">
                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${item.type === 'Test' ? 'bg-pink-100 text-pink-600' : 'bg-indigo-100 text-indigo-600'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${item.type === 'Test' ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'}`}>
                            {item.type === 'Test' ? <Activity size={18} /> : <Clock size={18} />}
                         </div>
                         <div>
-                           <p className="font-semibold text-slate-800 text-sm">{item.title}</p>
-                           <p className="text-slate-400 text-xs">{item.time}</p>
+                           <p className="font-semibold text-slate-800 dark:text-white text-sm">{item.title}</p>
+                           <p className="text-slate-400 dark:text-slate-500 text-xs">{item.time}</p>
                         </div>
                      </div>
-                     {item.score && <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded-md">{item.score}</span>}
+                     {item.score && <span className="text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-md">{item.score}</span>}
                   </div>
                ))}
             </div>
          </div>
 
          {/* Focus Areas */}
-         <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-            <h3 className="font-bold text-slate-800 mb-6">Focus Areas for Next Week</h3>
+         <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <h3 className="font-bold text-slate-800 dark:text-white mb-6">Focus Areas for Next Week</h3>
             <div className="space-y-4">
-               <div className="p-4 bg-orange-50 border border-orange-100 rounded-2xl flex items-start gap-4">
-                  <AlertCircle className="text-orange-500 mt-1 flex-shrink-0" size={20} />
+               <div className="p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800/50 rounded-2xl flex items-start gap-4">
+                  <AlertCircle className="text-orange-500 dark:text-orange-400 mt-1 flex-shrink-0" size={20} />
                   <div>
-                     <h4 className="font-bold text-orange-900 text-sm">Calculus - Integration</h4>
-                     <p className="text-orange-700/80 text-xs mt-1 leading-relaxed">Your accuracy dropped to 45% in the last mock. Review standard integrals.</p>
+                     <h4 className="font-bold text-orange-900 dark:text-orange-200 text-sm">Calculus - Integration</h4>
+                     <p className="text-orange-700/80 dark:text-orange-300/80 text-xs mt-1 leading-relaxed">Your accuracy dropped to 45% in the last mock. Review standard integrals.</p>
                   </div>
                </div>
-               <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-start gap-4">
-                  <AlertCircle className="text-blue-500 mt-1 flex-shrink-0" size={20} />
+               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-2xl flex items-start gap-4">
+                  <AlertCircle className="text-blue-500 dark:text-blue-400 mt-1 flex-shrink-0" size={20} />
                   <div>
-                     <h4 className="font-bold text-blue-900 text-sm">History - World War II</h4>
-                     <p className="text-blue-700/80 text-xs mt-1 leading-relaxed">You haven't revisited this topic in 3 weeks. Spaced repetition recommended.</p>
+                     <h4 className="font-bold text-blue-900 dark:text-blue-200 text-sm">History - World War II</h4>
+                     <p className="text-blue-700/80 dark:text-blue-300/80 text-xs mt-1 leading-relaxed">You haven't revisited this topic in 3 weeks. Spaced repetition recommended.</p>
                   </div>
                </div>
             </div>

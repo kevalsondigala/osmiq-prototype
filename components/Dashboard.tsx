@@ -20,11 +20,11 @@ const Dashboard: React.FC<DashboardProps> = ({ changeView, streak }) => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Home</h1>
-          <p className="text-slate-500 mt-1">Good Morning, Anastasia! Ready to learn something new?</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Home</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Good Morning, Anastasia! Ready to learn something new?</p>
         </div>
         <div className="flex items-center gap-4">
-           <button className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm text-sm font-medium text-slate-600 flex items-center gap-2 hover:bg-slate-50">
+           <button className="bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700">
              <Calendar size={16} /> Today, Oct 24
            </button>
         </div>
@@ -34,7 +34,7 @@ const Dashboard: React.FC<DashboardProps> = ({ changeView, streak }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Usage This Month - Tone on Tone: Pink */}
-        <div className="md:col-span-2 bg-pink-50 border border-pink-100 p-6 rounded-3xl flex flex-col justify-between">
+        <div className="md:col-span-2 bg-pink-50 dark:bg-pink-900/20 border border-pink-100 dark:border-pink-800/50 p-6 rounded-3xl flex flex-col justify-between">
           <div className="flex justify-between items-start mb-6">
              <div>
                <h3 className="text-lg font-bold text-pink-900">Usage This Month</h3>
@@ -66,7 +66,7 @@ const Dashboard: React.FC<DashboardProps> = ({ changeView, streak }) => {
         </div>
 
         {/* Avg Time & Focus - Tone on Tone: Green */}
-        <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-3xl flex flex-col justify-between">
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 p-6 rounded-3xl flex flex-col justify-between">
            <div>
              <h3 className="text-lg font-bold text-emerald-900 mb-1">Study Focus</h3>
              <p className="text-emerald-700/70 text-sm">Suggested daily goal</p>
@@ -77,7 +77,7 @@ const Dashboard: React.FC<DashboardProps> = ({ changeView, streak }) => {
               <span className="text-emerald-600 font-medium mb-1">hrs/day</span>
            </div>
 
-           <div className="mt-6 p-4 bg-white/60 rounded-2xl border border-emerald-100/50">
+           <div className="mt-6 p-4 bg-white/60 dark:bg-slate-800/60 rounded-2xl border border-emerald-100/50 dark:border-emerald-800/30">
               <div className="flex items-center gap-3">
                  <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
                     <BookOpen size={18} />
@@ -92,49 +92,49 @@ const Dashboard: React.FC<DashboardProps> = ({ changeView, streak }) => {
       </div>
 
       {/* Feature Access Cards - Clean, modern look */}
-      <h2 className="text-xl font-bold text-slate-800 mt-8">Quick Access</h2>
+      <h2 className="text-xl font-bold text-slate-800 dark:text-white mt-8">Quick Access</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
          
          {/* Card 1: Tone Blue */}
-         <div onClick={() => changeView(View.PROJECT_HELPER)} className="group bg-blue-50 border border-blue-100 p-6 rounded-3xl cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+         <div onClick={() => changeView(View.PROJECT_HELPER)} className="group bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 p-6 rounded-3xl cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
             <div className="flex justify-between items-start mb-8">
                <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
                   <TrendingUp size={24} />
                </div>
-               <div className="p-2 bg-white rounded-full text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity">
+               <div className="p-2 bg-white dark:bg-slate-800 rounded-full text-blue-300 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
                   <ArrowRight size={16} />
                </div>
             </div>
-            <h3 className="text-xl font-bold text-blue-900 mb-1">Project Helper</h3>
-            <p className="text-blue-700/70 text-sm">Draft reports & generate ideas.</p>
+            <h3 className="text-xl font-bold text-blue-900 dark:text-blue-200 mb-1">Project Helper</h3>
+            <p className="text-blue-700/70 dark:text-blue-300/70 text-sm">Draft reports & generate ideas.</p>
          </div>
 
          {/* Card 2: Tone Purple */}
-         <div onClick={() => changeView(View.CHATBOT)} className="group bg-violet-50 border border-violet-100 p-6 rounded-3xl cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+         <div onClick={() => changeView(View.CHATBOT)} className="group bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800/50 p-6 rounded-3xl cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
             <div className="flex justify-between items-start mb-8">
                <div className="p-3 bg-violet-100 text-violet-600 rounded-2xl group-hover:bg-violet-600 group-hover:text-white transition-colors">
                   <Zap size={24} />
                </div>
-               <div className="p-2 bg-white rounded-full text-violet-300 opacity-0 group-hover:opacity-100 transition-opacity">
+               <div className="p-2 bg-white dark:bg-slate-800 rounded-full text-violet-300 dark:text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity">
                   <ArrowRight size={16} />
                </div>
             </div>
-            <h3 className="text-xl font-bold text-violet-900 mb-1">AI Assistant</h3>
-            <p className="text-violet-700/70 text-sm">Clear your doubts instantly.</p>
+            <h3 className="text-xl font-bold text-violet-900 dark:text-violet-200 mb-1">AI Assistant</h3>
+            <p className="text-violet-700/70 dark:text-violet-300/70 text-sm">Clear your doubts instantly.</p>
          </div>
 
          {/* Card 3: Tone Orange */}
-         <div onClick={() => changeView(View.ANALYTICS)} className="group bg-orange-50 border border-orange-100 p-6 rounded-3xl cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+         <div onClick={() => changeView(View.ANALYTICS)} className="group bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800/50 p-6 rounded-3xl cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
             <div className="flex justify-between items-start mb-8">
                <div className="p-3 bg-orange-100 text-orange-600 rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-colors">
                   <Clock size={24} />
                </div>
-               <div className="p-2 bg-white rounded-full text-orange-300 opacity-0 group-hover:opacity-100 transition-opacity">
+               <div className="p-2 bg-white dark:bg-slate-800 rounded-full text-orange-300 dark:text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity">
                   <ArrowRight size={16} />
                </div>
             </div>
-            <h3 className="text-xl font-bold text-orange-900 mb-1">Analytics</h3>
-            <p className="text-orange-700/70 text-sm">Check your progress report.</p>
+            <h3 className="text-xl font-bold text-orange-900 dark:text-orange-200 mb-1">Analytics</h3>
+            <p className="text-orange-700/70 dark:text-orange-300/70 text-sm">Check your progress report.</p>
          </div>
       </div>
     </div>

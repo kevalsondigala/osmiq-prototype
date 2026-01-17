@@ -152,7 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
 
         <button 
-          onClick={() => setCurrentView(View.SUBSCRIPTION)}
+          onClick={() => setCurrentView(View.PROFILE)}
           className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'}`}
         >
            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
@@ -161,7 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({
            {!isCollapsed && (
              <div className="overflow-hidden">
                <p className={`text-sm font-semibold truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Anastasia</p>
-               <p className="text-xs text-slate-500 truncate hover:text-indigo-600 transition-colors">Student Plan</p>
+               <p className="text-xs text-slate-500 dark:text-slate-400 truncate hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Student Plan</p>
              </div>
            )}
         </button>

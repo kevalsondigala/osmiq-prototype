@@ -9,6 +9,7 @@ import ProjectHelper from './components/ProjectHelper';
 import PaperGenerator from './components/PaperGenerator';
 import MockTest from './components/MockTest';
 import Subscription from './components/Subscription';
+import Profile from './components/Profile';
 import { View } from './types';
 
 const App: React.FC = () => {
@@ -55,6 +56,8 @@ const App: React.FC = () => {
         return <MockTest />;
       case View.SUBSCRIPTION:
         return <Subscription />;
+      case View.PROFILE:
+        return <Profile />;
       case View.SETTINGS:
         return <div className="p-10 text-center text-slate-500 dark:text-slate-400">Settings Page (Coming Soon)</div>;
       default:
