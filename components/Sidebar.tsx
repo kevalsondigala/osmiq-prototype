@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {!isCollapsed && (
           <div className="flex items-center gap-2 text-indigo-600 font-bold text-xl">
             <img 
-              src="/assets/osmiq-logo.png" 
+              src="/osmiq-logo.png" 
               alt="Osmiq Logo" 
               className="w-6 h-6 object-contain"
               onError={(e) => {
@@ -72,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {isCollapsed && (
            <div className="mx-auto text-indigo-600">
              <img 
-               src="/assets/osmiq-logo.png" 
+               src="/osmiq-logo.png" 
                alt="Osmiq Logo" 
                className="w-6 h-6 object-contain"
                onError={(e) => {
