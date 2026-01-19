@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { generateChatResponse } from '../services/geminiService';
 import { ChatMessage } from '../types';
 import { 
@@ -23,6 +24,7 @@ const Chatbot: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isWebSearch, setIsWebSearch] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
 
   const prompts = [
     { icon: <ListTodo size={20} />, text: "Create a study schedule for finals week" },
@@ -88,7 +90,7 @@ const Chatbot: React.FC = () => {
   const isChatEmpty = messages.length === 0;
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-900 relative font-sans transition-colors duration-200">
+    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-black relative font-sans transition-colors duration-200">
       
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -97,7 +99,7 @@ const Chatbot: React.FC = () => {
           <div className="h-full flex flex-col items-center justify-center p-8 max-w-4xl mx-auto">
             <div className="mb-8 text-center space-y-2">
               <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight">
-                Hi there, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">Anastasia</span>
+                Hi there, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">{user?.name || 'User'}</span>
               </h1>
               <h2 className="text-3xl md:text-4xl font-bold text-slate-300 dark:text-slate-600">
                 What would you like to know?
@@ -113,9 +115,9 @@ const Chatbot: React.FC = () => {
                 <button
                   key={idx}
                   onClick={() => handleSend(prompt.text)}
-                  className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:shadow-md transition-all text-left flex items-start gap-4 group"
+                  className="p-4 bg-white dark:bg-black border border-slate-200 dark:border-gray-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-gray-900 hover:shadow-md transition-all text-left flex items-start gap-4 group"
                 >
-                  <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <div className="p-2 bg-slate-100 dark:bg-gray-900 rounded-lg text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                     {prompt.icon}
                   </div>
                   <span className="text-slate-700 dark:text-slate-200 font-medium text-sm mt-1">{prompt.text}</span>
@@ -135,7 +137,7 @@ const Chatbot: React.FC = () => {
                 key={msg.id} 
                 className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
               >
-                <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${msg.role === 'user' ? 'bg-slate-200 dark:bg-slate-700' : 'bg-gradient-to-tr from-indigo-500 to-purple-600'}`}>
+                <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${msg.role === 'user' ? 'bg-slate-200 dark:bg-gray-900' : 'bg-gradient-to-tr from-indigo-500 to-purple-600'}`}>
                   {msg.role === 'user' ? <User size={16} className="text-slate-600 dark:text-slate-300" /> : <Bot size={16} className="text-white" />}
                 </div>
                 
@@ -146,8 +148,8 @@ const Chatbot: React.FC = () => {
                   <div 
                     className={`p-4 rounded-2xl whitespace-pre-wrap leading-relaxed shadow-sm ${
                       msg.role === 'user' 
-                        ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tr-sm border border-slate-100 dark:border-slate-700' 
-                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm border border-slate-100 dark:border-slate-700'
+                        ? 'bg-white dark:bg-black text-slate-800 dark:text-slate-200 rounded-tr-sm border border-slate-100 dark:border-gray-800' 
+                        : 'bg-white dark:bg-black text-slate-800 dark:text-slate-200 rounded-tl-sm border border-slate-100 dark:border-gray-800'
                     }`}
                   >
                     {msg.text}
@@ -161,7 +163,7 @@ const Chatbot: React.FC = () => {
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center">
                   <Bot size={16} className="text-white" />
                 </div>
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl rounded-tl-sm border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-3">
+                <div className="bg-white dark:bg-black p-4 rounded-2xl rounded-tl-sm border border-slate-100 dark:border-gray-800 shadow-sm flex items-center gap-3">
                   <Loader2 size={18} className="animate-spin text-indigo-600 dark:text-indigo-400" />
                   <span className="text-sm text-slate-500 dark:text-slate-400">Thinking...</span>
                 </div>
@@ -173,12 +175,12 @@ const Chatbot: React.FC = () => {
       </div>
 
       {/* Floating Input Area */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent dark:from-slate-900 dark:via-slate-900 z-10">
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent dark:from-black dark:via-black z-10">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/20 p-2 relative transition-all focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500/50">
+          <div className="bg-white dark:bg-black border border-slate-200 dark:border-gray-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/20 p-2 relative transition-all focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500/50">
             
             {/* Header / Tools inside input */}
-            <div className="flex justify-between items-center px-4 py-2 border-b border-slate-100 dark:border-slate-700 mb-2">
+            <div className="flex justify-between items-center px-4 py-2 border-b border-slate-100 dark:border-gray-800 mb-2">
                <span className="text-xs font-semibold text-slate-900 dark:text-white">Ask whatever you want...</span>
                <button 
                  onClick={() => setIsWebSearch(!isWebSearch)}
@@ -204,13 +206,13 @@ const Chatbot: React.FC = () => {
             {/* Footer Actions */}
             <div className="flex justify-between items-center px-2 mt-2">
               <div className="flex gap-2">
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-900 transition-colors">
                   <div className="p-1 rounded-full border border-slate-300 dark:border-slate-600">
                     <Paperclip size={10} />
                   </div>
                   Add Attachment
                 </button>
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-900 transition-colors">
                    <div className="p-1 rounded-full border border-slate-300 dark:border-slate-600">
                     <ImageIcon size={10} />
                   </div>
@@ -226,7 +228,7 @@ const Chatbot: React.FC = () => {
                   className={`p-3 rounded-full transition-all shadow-sm ${
                     input.trim() && !loading 
                       ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105' 
-                      : 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                      : 'bg-slate-100 dark:bg-gray-900 text-slate-400 cursor-not-allowed'
                   }`}
                 >
                   <Send size={18} />

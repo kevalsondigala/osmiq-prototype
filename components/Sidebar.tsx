@@ -60,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div 
       className={`h-screen border-r flex flex-col transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} sticky top-0 left-0 z-50 shadow-sm
-        ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}
+        ${isDarkMode ? 'bg-black border-gray-800' : 'bg-white border-slate-200'}
       `}
     >
       {/* Header */}
@@ -166,8 +166,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'}`}
         >
            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
-             {user?.full_name 
-               ? user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+             {user?.name 
+               ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                : user?.email 
                  ? user.email[0].toUpperCase()
                  : 'U'}
@@ -175,7 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({
            {!isCollapsed && (
              <div className="overflow-hidden">
                <p className={`text-sm font-semibold truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>
-                 {user?.full_name || user?.email || 'User'}
+                 {user?.name || user?.email || 'User'}
                </p>
                <p className="text-xs text-slate-500 dark:text-slate-400 truncate hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Student Plan</p>
              </div>

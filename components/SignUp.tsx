@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Loader2, Mail, Lock, User, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const SignUp: React.FC = () => {
-  const [fullName, setFullName] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -46,6 +46,12 @@ const SignUp: React.FC = () => {
     setError('');
     setEmailError('');
 
+    // Name validation
+    if (!name || name.trim().length === 0) {
+      setError('Name is required');
+      return;
+    }
+
     // Email validation
     if (!email || !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
@@ -69,7 +75,7 @@ const SignUp: React.FC = () => {
       await authSignUp({ 
         email, 
         password,
-        full_name: fullName || undefined
+        name: name.trim()
       });
       // Navigate to main app after successful sign up
       navigate('/', { replace: true });
@@ -79,10 +85,10 @@ const SignUp: React.FC = () => {
     }
   };
 
-  const isFormValid = email && validateEmail(email) && password && confirmPassword && password.length >= 6 && password === confirmPassword;
+  const isFormValid = name && name.trim().length > 0 && email && validateEmail(email) && password && confirmPassword && password.length >= 6 && password === confirmPassword;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black px-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
@@ -106,7 +112,7 @@ const SignUp: React.FC = () => {
         </div>
 
         {/* Sign Up Form */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-8">
+        <div className="bg-white dark:bg-black rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Error Message */}
             {error && (
@@ -116,19 +122,20 @@ const SignUp: React.FC = () => {
               </div>
             )}
 
-            {/* Full Name Field */}
+            {/* Name Field */}
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Full Name (Optional)
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <input
-                  id="fullName"
+                  id="name"
                   type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
                   placeholder="John Doe"
                 />
               </div>
@@ -148,7 +155,7 @@ const SignUp: React.FC = () => {
                   onChange={handleEmailChange}
                   onBlur={handleEmailBlur}
                   required
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
                     emailError 
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
                       : 'border-gray-300 dark:border-gray-700 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent'
@@ -178,7 +185,7 @@ const SignUp: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
                   placeholder="At least 6 characters"
                 />
                 <button
@@ -205,7 +212,7 @@ const SignUp: React.FC = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
                   placeholder="Confirm your password"
                 />
                 <button

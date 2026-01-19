@@ -64,7 +64,7 @@ const SignIn: React.FC = () => {
   const isFormValid = email && validateEmail(email) && password;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black px-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
@@ -88,7 +88,7 @@ const SignIn: React.FC = () => {
         </div>
 
         {/* Sign In Form */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-8">
+        <div className="bg-white dark:bg-black rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Error Message */}
             {error && (
@@ -112,7 +112,7 @@ const SignIn: React.FC = () => {
                   onChange={handleEmailChange}
                   onBlur={handleEmailBlur}
                   required
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
                     emailError 
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500' 
                       : 'border-gray-300 dark:border-gray-700 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent'
@@ -141,7 +141,7 @@ const SignIn: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
                   placeholder="Enter your password"
                 />
                 <button

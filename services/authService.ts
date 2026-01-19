@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 export interface SignUpData {
   email: string;
   password: string;
-  full_name?: string;
+  name: string;
 }
 
 export interface SignInData {
@@ -17,11 +17,16 @@ export interface AuthResponse {
   success: boolean;
   access_token: string;
   token_type: string;
+  name?: string; // Name can be directly in response
+  user?: {
+    email: string;
+    name?: string;
+  };
 }
 
 export interface User {
   email: string;
-  full_name?: string;
+  name?: string;
 }
 
 // Get stored token from localStorage
@@ -67,8 +72,7 @@ export const signUp = async (data: SignUpData): Promise<AuthResponse> => {
     body: JSON.stringify({
       email: data.email,
       password: data.password,
-      // Only include full_name if it's provided
-      ...(data.full_name && { full_name: data.full_name }),
+      name: data.name,
     }),
   });
 
@@ -79,11 +83,15 @@ export const signUp = async (data: SignUpData): Promise<AuthResponse> => {
 
   const result: AuthResponse = await response.json();
   
-  // Store token and user data (email from form since API doesn't return user object)
+  // Store token and user data
   if (result.access_token) {
     setToken(result.access_token);
-    // Store email from the form data
-    setUser({ email: data.email, full_name: data.full_name });
+    // Store user data from API response or form data
+    if (result.user) {
+      setUser(result.user);
+    } else {
+      setUser({ email: data.email, name: data.name });
+    }
   }
 
   return result;
@@ -110,11 +118,16 @@ export const signIn = async (data: SignInData): Promise<AuthResponse> => {
 
   const result: AuthResponse = await response.json();
   
-  // Store token and user data (email from form since API doesn't return user object)
+  // Store token and user data from API response
   if (result.access_token) {
     setToken(result.access_token);
-    // Store email from the form data
-    setUser({ email: data.email });
+    // Store user data from API response (name can be directly in response or in user object)
+    const userName = result.name || result.user?.name;
+    if (result.user) {
+      setUser({ ...result.user, name: userName || result.user.name });
+    } else {
+      setUser({ email: data.email, name: userName });
+    }
   }
 
   return result;

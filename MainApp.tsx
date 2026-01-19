@@ -66,7 +66,7 @@ const MainApp: React.FC = () => {
   };
 
   return (
-    <div className={`flex min-h-screen font-sans transition-colors duration-200 ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
+    <div className={`flex min-h-screen font-sans transition-colors duration-200 ${isDarkMode ? 'bg-black text-white' : 'bg-slate-50 text-slate-900'}`}>
       <Sidebar 
         currentView={currentView} 
         setCurrentView={setCurrentView}
@@ -75,7 +75,7 @@ const MainApp: React.FC = () => {
         isDarkMode={isDarkMode}
         toggleTheme={toggleTheme}
       />
-      <main className="flex-1 h-screen overflow-y-auto relative no-scrollbar bg-[#f8fafc] dark:bg-slate-900 transition-colors duration-200">
+      <main className="flex-1 h-screen overflow-y-auto relative no-scrollbar bg-[#f8fafc] dark:bg-black transition-colors duration-200">
         {renderView()}
       </main>
     </div>
