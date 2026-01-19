@@ -23,6 +23,9 @@ const Chatbot: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isWebSearch, setIsWebSearch] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  const [streamingText, setStreamingText] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
@@ -39,7 +42,33 @@ const Chatbot: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, loading]);
+  }, [messages, loading, streamingText]);
+
+  // Streaming text effect - displays text word by word
+  const streamText = (fullText: string, onUpdate: (text: string) => void, onComplete: () => void) => {
+    const words = fullText.split(' ');
+    let currentIndex = 0;
+    setStreamingText('');
+    setIsStreaming(true);
+
+    const streamInterval = setInterval(() => {
+      if (currentIndex < words.length) {
+        const textSoFar = words.slice(0, currentIndex + 1).join(' ');
+        setStreamingText(textSoFar);
+        onUpdate(textSoFar);
+        currentIndex++;
+        
+        // Scroll to bottom as text streams
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 0);
+      } else {
+        clearInterval(streamInterval);
+        setIsStreaming(false);
+        onComplete();
+      }
+    }, 30); // Adjust speed here - lower = faster
+  };
 
   const handleSend = async (textOverride?: string) => {
     const textToSend = textOverride || input;
@@ -55,6 +84,8 @@ const Chatbot: React.FC = () => {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
+    setStreamingText('');
+    setIsStreaming(false);
 
     try {
       // Format history for Gemini
@@ -65,18 +96,51 @@ const Chatbot: React.FC = () => {
 
       const responseText = await generateChatResponse(userMsg.text, history, [], isWebSearch);
 
+      // Create bot message placeholder
+      const botMsgId = (Date.now() + 1).toString();
       const botMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: botMsgId,
         role: 'model',
-        text: responseText,
+        text: '',
         timestamp: Date.now()
       };
 
+      // Add placeholder message
       setMessages(prev => [...prev, botMsg]);
+      setLoading(false);
+
+      // Stream the response
+      streamText(
+        responseText,
+        (text) => {
+          // Update the message as it streams
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === botMsgId 
+                ? { ...msg, text } 
+                : msg
+            )
+          );
+        },
+        () => {
+          // Streaming complete
+          setStreamingText('');
+          setIsStreaming(false);
+        }
+      );
     } catch (error) {
       console.error(error);
-    } finally {
       setLoading(false);
+      setIsStreaming(false);
+      
+      // Add error message
+      const errorMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'model',
+        text: 'Sorry, I encountered an error while processing your request.',
+        timestamp: Date.now()
+      };
+      setMessages(prev => [...prev, errorMsg]);
     }
   };
 
@@ -90,7 +154,14 @@ const Chatbot: React.FC = () => {
   const isChatEmpty = messages.length === 0;
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-black relative font-sans transition-colors duration-200">
+    <>
+      <style>{`
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+      `}</style>
+      <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-black relative font-sans transition-colors duration-200">
       
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -137,8 +208,21 @@ const Chatbot: React.FC = () => {
                 key={msg.id} 
                 className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
               >
-                <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${msg.role === 'user' ? 'bg-slate-200 dark:bg-gray-900' : 'bg-gradient-to-tr from-indigo-500 to-purple-600'}`}>
-                  {msg.role === 'user' ? <User size={16} className="text-slate-600 dark:text-slate-300" /> : <Bot size={16} className="text-white" />}
+                <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden ${msg.role === 'user' ? 'bg-slate-200 dark:bg-gray-900' : 'bg-white dark:bg-black border border-slate-200 dark:border-gray-800'}`}>
+                  {msg.role === 'user' ? (
+                    <User size={16} className="text-slate-600 dark:text-slate-300" />
+                  ) : (
+                    logoError ? (
+                      <Bot size={16} className="text-indigo-600 dark:text-indigo-400" />
+                    ) : (
+                      <img 
+                        src="/osmiq-logo.png" 
+                        alt="Osmiq" 
+                        className="h-5 w-5 object-contain"
+                        onError={() => setLogoError(true)}
+                      />
+                    )
+                  )}
                 </div>
                 
                 <div className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
@@ -153,6 +237,9 @@ const Chatbot: React.FC = () => {
                     }`}
                   >
                     {msg.text}
+                    {isStreaming && msg.role === 'model' && messages[messages.length - 1]?.id === msg.id && (
+                      <span className="inline-block w-0.5 h-4 bg-indigo-600 dark:bg-indigo-400 ml-1 animate-pulse" style={{ animation: 'blink 1s infinite' }}></span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -160,8 +247,17 @@ const Chatbot: React.FC = () => {
             
             {loading && (
               <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center">
-                  <Bot size={16} className="text-white" />
+                <div className="w-8 h-8 rounded-full bg-white dark:bg-black border border-slate-200 dark:border-gray-800 flex items-center justify-center overflow-hidden">
+                  {logoError ? (
+                    <Bot size={16} className="text-indigo-600 dark:text-indigo-400 animate-pulse" />
+                  ) : (
+                    <img 
+                      src="/osmiq-logo.png" 
+                      alt="Osmiq" 
+                      className="h-5 w-5 object-contain animate-pulse"
+                      onError={() => setLogoError(true)}
+                    />
+                  )}
                 </div>
                 <div className="bg-white dark:bg-black p-4 rounded-2xl rounded-tl-sm border border-slate-100 dark:border-gray-800 shadow-sm flex items-center gap-3">
                   <Loader2 size={18} className="animate-spin text-indigo-600 dark:text-indigo-400" />
@@ -181,7 +277,18 @@ const Chatbot: React.FC = () => {
             
             {/* Header / Tools inside input */}
             <div className="flex justify-between items-center px-4 py-2 border-b border-slate-100 dark:border-gray-800 mb-2">
-               <span className="text-xs font-semibold text-slate-900 dark:text-white">Ask whatever you want...</span>
+               <div className="flex items-center gap-2">
+                 <img 
+                   src="/osmiq-logo.png" 
+                   alt="Osmiq Logo" 
+                   className="h-4 w-auto object-contain"
+                   onError={(e) => {
+                     // Fallback if image doesn't exist
+                     (e.target as HTMLImageElement).style.display = 'none';
+                   }}
+                 />
+                 <span className="text-xs font-semibold text-slate-900 dark:text-white">Ask whatever you want...</span>
+               </div>
                <button 
                  onClick={() => setIsWebSearch(!isWebSearch)}
                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
@@ -244,6 +351,7 @@ const Chatbot: React.FC = () => {
       </div>
 
     </div>
+    </>
   );
 };
 
