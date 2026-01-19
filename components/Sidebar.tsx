@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { View } from '../types';
 import { 
   Home, 
@@ -14,7 +16,8 @@ import {
   ChevronRight,
   Moon,
   Sun,
-  CreditCard
+  CreditCard,
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -34,6 +37,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   isDarkMode,
   toggleTheme
 }) => {
+  const navigate = useNavigate();
+  const { signOut, user } = useAuth();
+
+  const handleSignOut = () => {
+    signOut();
+    navigate('/signin');
+  };
   
   const menuItems = [
     { id: View.HOME, label: 'Home', icon: Home },
@@ -156,14 +166,30 @@ const Sidebar: React.FC<SidebarProps> = ({
           className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'}`}
         >
            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
-             AN
+             {user?.full_name 
+               ? user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+               : user?.email 
+                 ? user.email[0].toUpperCase()
+                 : 'U'}
            </div>
            {!isCollapsed && (
              <div className="overflow-hidden">
-               <p className={`text-sm font-semibold truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Anastasia</p>
+               <p className={`text-sm font-semibold truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>
+                 {user?.full_name || user?.email || 'User'}
+               </p>
                <p className="text-xs text-slate-500 dark:text-slate-400 truncate hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Student Plan</p>
              </div>
            )}
+        </button>
+
+        <button
+          onClick={handleSignOut}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-start'} gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20`}
+        >
+          <LogOut size={20} />
+          {!isCollapsed && (
+            <span className="text-sm font-medium">Sign out</span>
+          )}
         </button>
       </div>
     </div>
