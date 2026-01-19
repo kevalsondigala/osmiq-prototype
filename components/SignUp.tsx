@@ -88,21 +88,35 @@ const SignUp: React.FC = () => {
   const isFormValid = name && name.trim().length > 0 && email && validateEmail(email) && password && confirmPassword && password.length >= 6 && password === confirmPassword;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black px-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <img 
-              src="/osmiq-logo.png" 
-              alt="Osmiq Logo" 
-              className="h-12 w-auto object-contain"
-              onError={(e) => {
-                // Fallback if image doesn't exist
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </div>
+    <>
+      <style>{`
+        @keyframes rotate-clockwise {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        .rotate-slow {
+          animation: rotate-clockwise 8s linear infinite;
+        }
+      `}</style>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black px-4">
+        <div className="w-full max-w-md">
+          {/* Logo/Header */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/osmiq-logo.png" 
+                alt="Osmiq Logo" 
+                className="h-12 w-auto object-contain rotate-slow"
+                onError={(e) => {
+                  // Fallback if image doesn't exist
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
           <h1 className="text-3xl font-semibold text-gray-900 dark:text-white mb-2">
             Create an account
           </h1>
@@ -254,7 +268,8 @@ const SignUp: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, ShieldCheck, CreditCard, RefreshCw, Star, Zap } from 'lucide-react';
+import { FONTS } from '../constants/fonts';
 
 const Subscription: React.FC = () => {
   const plans = [
@@ -73,7 +74,7 @@ const Subscription: React.FC = () => {
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto pb-20">
+    <div className="p-8 max-w-7xl mx-auto pb-20" style={{ fontFamily: FONTS.PRIMARY, fontWeight: FONTS.WEIGHTS.LIGHT }}>
       {/* Header */}
       <div className="text-center mb-12 space-y-4">
         <h1 className="text-4xl font-bold text-slate-900 dark:text-white">Choose Your Plan</h1>
