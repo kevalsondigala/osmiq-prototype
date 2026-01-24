@@ -12,6 +12,10 @@ import {
   ArrowUp,
   Copy,
   Check,
+  Paperclip,
+  FileText,
+  Image as ImageIcon,
+  Mic,
 } from 'lucide-react';
 
 const Chatbot: React.FC = () => {
@@ -23,8 +27,24 @@ const Chatbot: React.FC = () => {
   const [streamingText, setStreamingText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [showUploadMenu, setShowUploadMenu] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const uploadMenuRef = useRef<HTMLDivElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
   const { user } = useAuth();
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (uploadMenuRef.current && !uploadMenuRef.current.contains(e.target as Node)) {
+        setShowUploadMenu(false);
+      }
+    };
+    if (showUploadMenu) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showUploadMenu]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -143,6 +163,71 @@ const Chatbot: React.FC = () => {
     } catch (err) {
       console.error('Failed to copy text:', err);
     }
+  };
+
+  const handleAddDocument = () => {
+    setShowUploadMenu(false);
+    documentInputRef.current?.click();
+  };
+
+  const handleAddImage = () => {
+    setShowUploadMenu(false);
+    imageInputRef.current?.click();
+  };
+
+  const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('Document added:', file.name);
+      // TODO: attach to message / upload
+    }
+    e.target.value = '';
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('Image added:', file.name);
+      // TODO: attach to message / upload
+    }
+    e.target.value = '';
+  };
+
+  const toggleVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      console.warn('Speech recognition not supported');
+      return;
+    }
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => {
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+    recognition.onerror = () => {
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+    recognition.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript;
+      setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+    };
+    recognition.start();
+    setIsListening(true);
   };
 
   const isChatEmpty = messages.length === 0;
@@ -316,42 +401,106 @@ const Chatbot: React.FC = () => {
           )}
         </div>
 
-        {/* Input Area - Minimal */}
+        {/* Input Area */}
         <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-black z-10">
           <div className="max-w-3xl mx-auto px-4 py-4">
-            <div className="relative">
-              <textarea
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  // Auto-resize textarea
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = 'auto';
-                  target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Message Osmiq..."
-                className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600 resize-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-500 max-h-32 min-h-[52px]"
-                rows={1}
-                style={{ 
-                  lineHeight: '1.5',
-                }}
-              />
-              <button 
-                onClick={() => handleSend()}
-                disabled={!input.trim() || loading}
-                className={`absolute right-[10px] bottom-[10px] h-8 w-8 flex items-center justify-center rounded-lg transition-all ${
-                  input.trim() && !loading 
-                    ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200' 
-                    : 'bg-gray-200 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {loading ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <ArrowUp size={16} />
+            <div className="relative flex items-end gap-1">
+              {/* Upload button with dropdown */}
+              <div className="relative flex-shrink-0" ref={uploadMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowUploadMenu(!showUploadMenu)}
+                  disabled={loading}
+                  className="h-[52px] w-10 flex items-center justify-center rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors disabled:opacity-50"
+                  title="Attach"
+                >
+                  <Paperclip size={20} />
+                </button>
+                {showUploadMenu && (
+                  <div className="absolute bottom-full left-0 mb-1 py-1.5 min-w-[180px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50">
+                    <button
+                      type="button"
+                      onClick={handleAddDocument}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                    >
+                      <FileText size={18} className="text-gray-500 dark:text-gray-400" />
+                      Add document
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddImage}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                    >
+                      <ImageIcon size={18} className="text-gray-500 dark:text-gray-400" />
+                      Add image
+                    </button>
+                  </div>
                 )}
-              </button>
+                <input
+                  ref={documentInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt"
+                  className="hidden"
+                  onChange={handleDocumentChange}
+                />
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </div>
+
+              <div className="flex-1 relative">
+                <textarea
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Message Osmiq..."
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600 resize-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-500 max-h-32 min-h-[52px] text-sm"
+                  rows={1}
+                  style={{ lineHeight: '1.5' }}
+                />
+              </div>
+
+              {/* Voice and Send */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={toggleVoiceInput}
+                  disabled={loading}
+                  className={`h-[52px] w-10 flex items-center justify-center rounded-xl transition-colors disabled:opacity-50 ${
+                    isListening
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                  title="Voice input"
+                >
+                  <Mic size={20} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSend()}
+                  disabled={!input.trim() || loading}
+                  className={`h-[52px] w-10 flex items-center justify-center rounded-xl transition-all ${
+                    input.trim() && !loading
+                      ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200'
+                      : 'bg-gray-200 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {loading ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <ArrowUp size={18} />
+                  )}
+                </button>
+              </div>
             </div>
             <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-3">
               Osmiq can make mistakes. Check important info.
