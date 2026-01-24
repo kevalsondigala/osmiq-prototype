@@ -1,35 +1,50 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { useAuth } from '../contexts/AuthContext';
 import { generateChatResponse } from '../services/geminiService';
 import { ChatMessage } from '../types';
 import { 
   Send, 
-  Paperclip, 
   Bot, 
   User, 
-  Loader2, 
-  Image as ImageIcon, 
-  Globe, 
-  RefreshCw,
-  Sparkles,
-  BookOpen,
-  Mail,
-  ListTodo
+  Loader2,
+  ArrowUp,
+  Copy,
+  Check,
+  Paperclip,
+  FileText,
+  Image as ImageIcon,
+  Mic,
 } from 'lucide-react';
 
 const Chatbot: React.FC = () => {
-  // Initial system message is hidden in the new UI flow until user chats
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isWebSearch, setIsWebSearch] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  const [streamingText, setStreamingText] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [showUploadMenu, setShowUploadMenu] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const uploadMenuRef = useRef<HTMLDivElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const { user } = useAuth();
 
-  const prompts = [
-    { icon: <ListTodo size={20} />, text: "Create a study schedule for finals week" },
-    { icon: <Mail size={20} />, text: "Draft an email to my professor asking for an extension" },
-    { icon: <BookOpen size={20} />, text: "Summarize the key events of the French Revolution" },
-    { icon: <Sparkles size={20} />, text: "Explain Quantum Entanglement like I'm 5" },
-  ];
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (uploadMenuRef.current && !uploadMenuRef.current.contains(e.target as Node)) {
+        setShowUploadMenu(false);
+      }
+    };
+    if (showUploadMenu) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showUploadMenu]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -37,7 +52,32 @@ const Chatbot: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, loading]);
+  }, [messages, loading, streamingText]);
+
+  // Streaming text effect - displays text word by word
+  const streamText = (fullText: string, onUpdate: (text: string) => void, onComplete: () => void) => {
+    const words = fullText.split(' ');
+    let currentIndex = 0;
+    setStreamingText('');
+    setIsStreaming(true);
+
+    const streamInterval = setInterval(() => {
+      if (currentIndex < words.length) {
+        const textSoFar = words.slice(0, currentIndex + 1).join(' ');
+        setStreamingText(textSoFar);
+        onUpdate(textSoFar);
+        currentIndex++;
+        
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 0);
+      } else {
+        clearInterval(streamInterval);
+        setIsStreaming(false);
+        onComplete();
+      }
+    }, 30);
+  };
 
   const handleSend = async (textOverride?: string) => {
     const textToSend = textOverride || input;
@@ -53,9 +93,10 @@ const Chatbot: React.FC = () => {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
+    setStreamingText('');
+    setIsStreaming(false);
 
     try {
-      // Format history for Gemini
       const history = messages.map(m => ({
         role: m.role,
         parts: [{ text: m.text }]
@@ -63,18 +104,45 @@ const Chatbot: React.FC = () => {
 
       const responseText = await generateChatResponse(userMsg.text, history, [], isWebSearch);
 
+      const botMsgId = (Date.now() + 1).toString();
       const botMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: botMsgId,
         role: 'model',
-        text: responseText,
+        text: '',
         timestamp: Date.now()
       };
 
       setMessages(prev => [...prev, botMsg]);
+      setLoading(false);
+
+      streamText(
+        responseText,
+        (text) => {
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === botMsgId 
+                ? { ...msg, text } 
+                : msg
+            )
+          );
+        },
+        () => {
+          setStreamingText('');
+          setIsStreaming(false);
+        }
+      );
     } catch (error) {
       console.error(error);
-    } finally {
       setLoading(false);
+      setIsStreaming(false);
+      
+      const errorMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'model',
+        text: 'Sorry, I encountered an error while processing your request.',
+        timestamp: Date.now()
+      };
+      setMessages(prev => [...prev, errorMsg]);
     }
   };
 
@@ -85,163 +153,363 @@ const Chatbot: React.FC = () => {
     }
   };
 
+  const handleCopy = async (text: string, messageId: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessageId(messageId);
+      setTimeout(() => {
+        setCopiedMessageId(null);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+    }
+  };
+
+  const handleAddDocument = () => {
+    setShowUploadMenu(false);
+    documentInputRef.current?.click();
+  };
+
+  const handleAddImage = () => {
+    setShowUploadMenu(false);
+    imageInputRef.current?.click();
+  };
+
+  const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('Document added:', file.name);
+      // TODO: attach to message / upload
+    }
+    e.target.value = '';
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('Image added:', file.name);
+      // TODO: attach to message / upload
+    }
+    e.target.value = '';
+  };
+
+  const toggleVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      console.warn('Speech recognition not supported');
+      return;
+    }
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => {
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+    recognition.onerror = () => {
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+    recognition.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript;
+      setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+    };
+    recognition.start();
+    setIsListening(true);
+  };
+
   const isChatEmpty = messages.length === 0;
 
+  const suggestedPrompts = [
+    "Create a study schedule for finals week",
+    "Draft an email to my professor asking for an extension",
+    "Summarize the key events of the French Revolution",
+    "Explain Quantum Entanglement",
+  ];
+
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-900 relative font-sans transition-colors duration-200">
-      
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto no-scrollbar">
-        {isChatEmpty ? (
-          /* Welcome Screen */
-          <div className="h-full flex flex-col items-center justify-center p-8 max-w-4xl mx-auto">
-            <div className="mb-8 text-center space-y-2">
-              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight">
-                Hi there, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">Anastasia</span>
-              </h1>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-300 dark:text-slate-600">
-                What would you like to know?
-              </h2>
-              <p className="text-slate-500 dark:text-slate-400 mt-4 max-w-lg mx-auto">
-                Use one of the most common prompts below or use your own to begin your study session.
-              </p>
-            </div>
-
-            {/* Prompt Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">
-              {prompts.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSend(prompt.text)}
-                  className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:shadow-md transition-all text-left flex items-start gap-4 group"
-                >
-                  <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                    {prompt.icon}
-                  </div>
-                  <span className="text-slate-700 dark:text-slate-200 font-medium text-sm mt-1">{prompt.text}</span>
-                </button>
-              ))}
-            </div>
-
-            <button className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-sm font-medium">
-              <RefreshCw size={14} /> Refresh Prompts
-            </button>
-          </div>
-        ) : (
-          /* Active Chat View */
-          <div className="max-w-4xl mx-auto p-4 space-y-8 pb-32">
-            {messages.map((msg) => (
-              <div 
-                key={msg.id} 
-                className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-              >
-                <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${msg.role === 'user' ? 'bg-slate-200 dark:bg-slate-700' : 'bg-gradient-to-tr from-indigo-500 to-purple-600'}`}>
-                  {msg.role === 'user' ? <User size={16} className="text-slate-600 dark:text-slate-300" /> : <Bot size={16} className="text-white" />}
-                </div>
-                
-                <div className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                  <div className="text-xs text-slate-400 mb-1 px-1">
-                    {msg.role === 'user' ? 'You' : 'Osmiq'}
-                  </div>
-                  <div 
-                    className={`p-4 rounded-2xl whitespace-pre-wrap leading-relaxed shadow-sm ${
-                      msg.role === 'user' 
-                        ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tr-sm border border-slate-100 dark:border-slate-700' 
-                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm border border-slate-100 dark:border-slate-700'
-                    }`}
+    <>
+      <style>{`
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+      `}</style>
+      <div className="flex flex-col h-full bg-white dark:bg-black relative">
+        
+        {/* Main Content Area - Fully Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          {isChatEmpty ? (
+            /* Welcome Screen with Suggested Prompts */
+            <div className="h-full flex flex-col items-center justify-center px-4 max-w-3xl mx-auto py-12">
+              <div className="text-center mb-8">
+                <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                  What would you like to know?
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 max-w-lg mx-auto">
+                  Use one of the most common prompts below or use your own to begin your study session.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+                {suggestedPrompts.map((prompt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSend(prompt)}
+                    disabled={loading}
+                    className="p-4 text-sm text-left rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-all text-gray-800 dark:text-gray-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {msg.text}
-                  </div>
-                </div>
+                    <span className="text-slate-500 dark:text-slate-400 mr-2 font-semibold text-sm">{idx + 1}.</span>
+                    {prompt}
+                  </button>
+                ))}
               </div>
-            ))}
-            
-            {loading && (
-              <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center">
-                  <Bot size={16} className="text-white" />
-                </div>
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl rounded-tl-sm border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-3">
-                  <Loader2 size={18} className="animate-spin text-indigo-600 dark:text-indigo-400" />
-                  <span className="text-sm text-slate-500 dark:text-slate-400">Thinking...</span>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-      </div>
-
-      {/* Floating Input Area */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent dark:from-slate-900 dark:via-slate-900 z-10">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/20 p-2 relative transition-all focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500/50">
-            
-            {/* Header / Tools inside input */}
-            <div className="flex justify-between items-center px-4 py-2 border-b border-slate-100 dark:border-slate-700 mb-2">
-               <span className="text-xs font-semibold text-slate-900 dark:text-white">Ask whatever you want...</span>
-               <button 
-                 onClick={() => setIsWebSearch(!isWebSearch)}
-                 className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
-                   isWebSearch 
-                     ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' 
-                     : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                 }`}
-               >
-                 <Globe size={12} /> All Web
-               </button>
             </div>
-
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type your question here..."
-              className="w-full px-4 py-2 bg-transparent border-none focus:ring-0 outline-none resize-none text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 max-h-40 min-h-[60px]"
-              rows={2}
-            />
-
-            {/* Footer Actions */}
-            <div className="flex justify-between items-center px-2 mt-2">
-              <div className="flex gap-2">
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                  <div className="p-1 rounded-full border border-slate-300 dark:border-slate-600">
-                    <Paperclip size={10} />
+          ) : (
+            /* Chat Messages - ChatGPT Style */
+            <div className="max-w-3xl mx-auto px-4 py-8 pb-32">
+              {messages.map((msg, index) => (
+                <div 
+                  key={msg.id} 
+                  className={`group relative flex gap-4 mb-6 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  {msg.role === 'model' && (
+                    <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center mt-1">
+                      {logoError ? (
+                        <Bot size={18} className="text-gray-600 dark:text-gray-400" />
+                      ) : (
+                        <img 
+                          src="/osmiq-logo.png" 
+                          alt="Osmiq" 
+                          className="h-6 w-6 object-contain"
+                          onError={() => setLogoError(true)}
+                        />
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className={`relative flex flex-col ${msg.role === 'user' ? 'items-end max-w-[85%]' : 'items-start max-w-[85%]'}`}>
+                    <div 
+                      className={`relative ${
+                        msg.role === 'user' 
+                          ? 'bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl rounded-tr-md px-4 py-3' 
+                          : 'text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-md px-4 py-3'
+                      }`}
+                      style={{ 
+                        wordBreak: 'break-word',
+                        lineHeight: '1.75',
+                        fontSize: '14px'
+                      }}
+                    >
+                      {msg.role === 'model' ? (
+                        <>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              h1: ({ children }) => <h1 className="text-base font-bold mt-3 mb-1.5 first:mt-0">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-sm font-bold mt-2.5 mb-1.5 first:mt-0">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-sm font-semibold mt-2.5 mb-1 first:mt-0">{children}</h3>,
+                              p: ({ children }) => <p className="mb-2 last:mb-0 whitespace-pre-wrap">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                              li: ({ children }) => <li className="ml-2">{children}</li>,
+                              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                              em: ({ children }) => <em className="italic">{children}</em>,
+                              code: ({ className, children, ...props }: { className?: string; children?: React.ReactNode }) => {
+                                const isBlock = className?.includes('language-');
+                                return isBlock ? (
+                                  <code className="block bg-transparent p-0 font-mono text-xs" {...props}>{children}</code>
+                                ) : (
+                                  <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs font-mono" {...props}>{children}</code>
+                                );
+                              },
+                              pre: ({ children }) => <pre className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 overflow-x-auto my-2 text-xs">{children}</pre>,
+                              blockquote: ({ children }) => <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-3 my-2 text-gray-600 dark:text-gray-400 italic">{children}</blockquote>,
+                              a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">{children}</a>,
+                              hr: () => <hr className="my-3 border-gray-200 dark:border-gray-700" />,
+                            }}
+                          >
+                            {msg.text}
+                          </ReactMarkdown>
+                          {isStreaming && messages[messages.length - 1]?.id === msg.id && (
+                            <span className="inline-block w-0.5 h-4 bg-gray-600 dark:bg-gray-400 ml-1 align-middle" style={{ animation: 'blink 1s infinite' }}></span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="whitespace-pre-wrap">{msg.text}</span>
+                      )}
+                    </div>
+                    
+                    {/* Copy Button - Appears on Hover */}
+                    {msg.text && (
+                      <button
+                        onClick={() => handleCopy(msg.text, msg.id)}
+                        className={`absolute ${
+                          msg.role === 'user' ? 'right-2 -bottom-8' : 'left-2 -bottom-8'
+                        } opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300`}
+                        title="Copy message"
+                      >
+                        {copiedMessageId === msg.id ? (
+                          <Check size={16} className="text-green-600 dark:text-green-400" />
+                        ) : (
+                          <Copy size={16} />
+                        )}
+                      </button>
+                    )}
                   </div>
-                  Add Attachment
-                </button>
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                   <div className="p-1 rounded-full border border-slate-300 dark:border-slate-600">
-                    <ImageIcon size={10} />
+
+                  {msg.role === 'user' && (
+                    <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center mt-1 bg-gray-200 dark:bg-gray-800">
+                      <User size={18} className="text-gray-600 dark:text-gray-400" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {loading && (
+                <div className="flex gap-4 justify-start mb-6">
+                  <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center mt-1">
+                    {logoError ? (
+                      <Bot size={18} className="text-gray-600 dark:text-gray-400 animate-pulse" />
+                    ) : (
+                      <img 
+                        src="/osmiq-logo.png" 
+                        alt="Osmiq" 
+                        className="h-6 w-6 object-contain animate-pulse"
+                        onError={() => setLogoError(true)}
+                      />
+                    )}
                   </div>
-                  Use Image
+                  <div className="flex items-center gap-2 px-4 py-3">
+                    <Loader2 size={16} className="animate-spin text-gray-400" />
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-black z-10">
+          <div className="max-w-3xl mx-auto px-4 py-4">
+            <div className="relative flex items-end gap-1">
+              {/* Upload button with dropdown */}
+              <div className="relative flex-shrink-0" ref={uploadMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowUploadMenu(!showUploadMenu)}
+                  disabled={loading}
+                  className="h-[52px] w-10 flex items-center justify-center rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors disabled:opacity-50"
+                  title="Attach"
+                >
+                  <Paperclip size={20} />
                 </button>
+                {showUploadMenu && (
+                  <div className="absolute bottom-full left-0 mb-1 py-1.5 min-w-[180px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50">
+                    <button
+                      type="button"
+                      onClick={handleAddDocument}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                    >
+                      <FileText size={18} className="text-gray-500 dark:text-gray-400" />
+                      Add document
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddImage}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                    >
+                      <ImageIcon size={18} className="text-gray-500 dark:text-gray-400" />
+                      Add image
+                    </button>
+                  </div>
+                )}
+                <input
+                  ref={documentInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt"
+                  className="hidden"
+                  onChange={handleDocumentChange}
+                />
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
               </div>
 
-              <div className="flex items-center gap-3">
-                 <span className="text-[10px] text-slate-400 font-medium">{input.length}/1000</span>
-                 <button 
+              <div className="flex-1 relative">
+                <textarea
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Message Osmiq..."
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600 resize-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-500 max-h-32 min-h-[52px] text-sm"
+                  rows={1}
+                  style={{ lineHeight: '1.5' }}
+                />
+              </div>
+
+              {/* Voice and Send */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={toggleVoiceInput}
+                  disabled={loading}
+                  className={`h-[52px] w-10 flex items-center justify-center rounded-xl transition-colors disabled:opacity-50 ${
+                    isListening
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                  title="Voice input"
+                >
+                  <Mic size={20} />
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleSend()}
                   disabled={!input.trim() || loading}
-                  className={`p-3 rounded-full transition-all shadow-sm ${
-                    input.trim() && !loading 
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105' 
-                      : 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                  className={`h-[52px] w-10 flex items-center justify-center rounded-xl transition-all ${
+                    input.trim() && !loading
+                      ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200'
+                      : 'bg-gray-200 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  <Send size={18} />
+                  {loading ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <ArrowUp size={18} />
+                  )}
                 </button>
               </div>
             </div>
-
+            <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-3">
+              Osmiq can make mistakes. Check important info.
+            </p>
           </div>
-          <p className="text-center text-[10px] text-slate-400 mt-4">
-            Osmiq can make mistakes. Check important info.
-          </p>
         </div>
-      </div>
 
-    </div>
+      </div>
+    </>
   );
 };
 

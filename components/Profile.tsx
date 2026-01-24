@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { User, Mail, Calendar, GraduationCap, Award, BookOpen, Clock, Edit2, Trash2, AlertTriangle, X } from 'lucide-react';
 
 const Profile: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { user } = useAuth();
 
   const handleDeleteAccount = () => {
     // Handle account deletion logic here
@@ -30,9 +32,13 @@ const Profile: React.FC = () => {
           {/* Avatar Section */}
           <div className="flex flex-col items-center">
             <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-pink-400 to-indigo-500 flex items-center justify-center text-white font-bold text-4xl mb-4 shadow-lg">
-              AN
+              {user?.name 
+                ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                : user?.email 
+                  ? user.email[0].toUpperCase()
+                  : 'U'}
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Anastasia</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{user?.name || 'User'}</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Student Plan</p>
           </div>
 
