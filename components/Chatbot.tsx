@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useAuth } from '../contexts/AuthContext';
 import { generateChatResponse } from '../services/geminiService';
 import { ChatMessage } from '../types';
@@ -145,6 +147,13 @@ const Chatbot: React.FC = () => {
 
   const isChatEmpty = messages.length === 0;
 
+  const suggestedPrompts = [
+    "Create a study schedule for finals week",
+    "Draft an email to my professor asking for an extension",
+    "Summarize the key events of the French Revolution",
+    "Explain Quantum Entanglement",
+  ];
+
   return (
     <>
       <style>{`
@@ -158,12 +167,28 @@ const Chatbot: React.FC = () => {
         {/* Main Content Area - Fully Scrollable */}
         <div className="flex-1 overflow-y-auto">
           {isChatEmpty ? (
-            /* Welcome Screen - Minimal */
-            <div className="h-full flex flex-col items-center justify-center px-4 max-w-3xl mx-auto">
-              <div className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                  How can I help you today?
+            /* Welcome Screen with Suggested Prompts */
+            <div className="h-full flex flex-col items-center justify-center px-4 max-w-3xl mx-auto py-12">
+              <div className="text-center mb-8">
+                <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                  What would you like to know?
                 </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 max-w-lg mx-auto">
+                  Use one of the most common prompts below or use your own to begin your study session.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+                {suggestedPrompts.map((prompt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSend(prompt)}
+                    disabled={loading}
+                    className="p-4 text-sm text-left rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-all text-gray-800 dark:text-gray-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="text-slate-500 dark:text-slate-400 mr-2 font-semibold text-sm">{idx + 1}.</span>
+                    {prompt}
+                  </button>
+                ))}
               </div>
             </div>
           ) : (
@@ -197,15 +222,47 @@ const Chatbot: React.FC = () => {
                           : 'text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-md px-4 py-3'
                       }`}
                       style={{ 
-                        whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
                         lineHeight: '1.75',
-                        fontSize: '15px'
+                        fontSize: '14px'
                       }}
                     >
-                      {msg.text}
-                      {isStreaming && msg.role === 'model' && messages[messages.length - 1]?.id === msg.id && (
-                        <span className="inline-block w-0.5 h-4 bg-gray-600 dark:bg-gray-400 ml-1" style={{ animation: 'blink 1s infinite' }}></span>
+                      {msg.role === 'model' ? (
+                        <>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              h1: ({ children }) => <h1 className="text-base font-bold mt-3 mb-1.5 first:mt-0">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-sm font-bold mt-2.5 mb-1.5 first:mt-0">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-sm font-semibold mt-2.5 mb-1 first:mt-0">{children}</h3>,
+                              p: ({ children }) => <p className="mb-2 last:mb-0 whitespace-pre-wrap">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                              li: ({ children }) => <li className="ml-2">{children}</li>,
+                              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                              em: ({ children }) => <em className="italic">{children}</em>,
+                              code: ({ className, children, ...props }: { className?: string; children?: React.ReactNode }) => {
+                                const isBlock = className?.includes('language-');
+                                return isBlock ? (
+                                  <code className="block bg-transparent p-0 font-mono text-xs" {...props}>{children}</code>
+                                ) : (
+                                  <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs font-mono" {...props}>{children}</code>
+                                );
+                              },
+                              pre: ({ children }) => <pre className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 overflow-x-auto my-2 text-xs">{children}</pre>,
+                              blockquote: ({ children }) => <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-3 my-2 text-gray-600 dark:text-gray-400 italic">{children}</blockquote>,
+                              a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">{children}</a>,
+                              hr: () => <hr className="my-3 border-gray-200 dark:border-gray-700" />,
+                            }}
+                          >
+                            {msg.text}
+                          </ReactMarkdown>
+                          {isStreaming && messages[messages.length - 1]?.id === msg.id && (
+                            <span className="inline-block w-0.5 h-4 bg-gray-600 dark:bg-gray-400 ml-1 align-middle" style={{ animation: 'blink 1s infinite' }}></span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="whitespace-pre-wrap">{msg.text}</span>
                       )}
                     </div>
                     

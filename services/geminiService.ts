@@ -40,7 +40,7 @@ export const generateChatResponse = async (
     });
 
     const result = await chat.sendMessage({ message });
-    
+    console.log("======>>>>>>>", result);
     let responseText = result.text || "I couldn't generate a response.";
 
     // Append grounding sources if available
